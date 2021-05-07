@@ -15,6 +15,8 @@ public class PlayerControl : MonoBehaviour
     CharacterController characterController;
     Vector2 cameraControl = Vector2.zero;
     GameObject spear;
+    GameObject lockedTarget = null;
+    float lockedTargetMaxDistance = 100;
 
     private void Awake()
     {
@@ -28,14 +30,15 @@ public class PlayerControl : MonoBehaviour
 
         inputs.Player.A.started += ctx => Jump();
         inputs.Player.X.started += ctx => Attack();
+        inputs.Player.LB.started += ctx => ToggleLockTarget();
     }
 
-    private void OnEnable()
+    void OnEnable()
     {
         inputs.Player.Enable();
     }
 
-    private void OnDisable()
+    void OnDisable()
     {
         inputs.Player.Disable();
     }
@@ -52,15 +55,21 @@ public class PlayerControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!characterController.isGrounded) {
-            moveDirection.y -= gravity;
-        }
+        if (!characterController.isGrounded) moveDirection.y -= gravity;
         characterController.Move(moveDirection * Time.deltaTime);
 
         if (cameraControl != Vector2.zero) ControlCamera();
+
+        if (lockedTarget) {
+            if (Vector3.Distance(lockedTarget.transform.position, transform.position) > lockedTargetMaxDistance) {
+                UnlockTarget();
+            } else {
+                playerCamera.AlignWithLockedTarget(lockedTarget);
+            }
+        }
     }
 
-    private void Move(Vector2 direction)
+    void Move(Vector2 direction)
     {
         if (direction.magnitude <= 0.15f) {
             moveDirection = Vector3.zero;
@@ -91,45 +100,106 @@ public class PlayerControl : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, targetAngle, 0f);
     }
 
-    private void ControlCamera()
+    void ControlCamera()
     {
         playerCamera.Rotate(cameraControl);
     }
 
-    private void Jump()
+    void Jump()
     {
         
     }
 
-    private void Attack()
+    void Attack()
     {
         ThrowLightSpear();
     }
 
-    private void ThrowLightSpear()
+    void ThrowLightSpear()
     {
-        Instantiate(lightSpear, transform.position, transform.rotation);
+        Quaternion throwDirection = transform.rotation;
+        if (lockedTarget) {
+            throwDirection = GetRotationTowardsLockedTargetForLightSpear();
+            transform.rotation = throwDirection;
+        }
+
+        Instantiate(lightSpear, transform.position, throwDirection);
         StartCoroutine(MakeSpearDisappear(0));
         StartCoroutine(DisablingAction(LightSpear.CHANNEL_DURATION + LightSpear.POSTACTION_LAG));
         StartCoroutine(MakeSpearReappear(LightSpear.CHANNEL_DURATION + LightSpear.DELAY_BEFORE_SPEAR_REAPPEARS));
     }
 
-    private IEnumerator MakeSpearDisappear(float duration)
+    IEnumerator MakeSpearDisappear(float duration)
     {
         yield return new WaitForSeconds(duration);
         spear.GetComponent<Renderer>().enabled = false;
     }
 
-    private IEnumerator MakeSpearReappear(float duration)
+    IEnumerator MakeSpearReappear(float duration)
     {
         yield return new WaitForSeconds(duration);
         spear.GetComponent<Renderer>().enabled = true;
     }
 
-    private IEnumerator DisablingAction(float duration)
+    IEnumerator DisablingAction(float duration)
     {
         OnDisable();
         yield return new WaitForSeconds(duration);
         OnEnable();
+    }
+
+    void ToggleLockTarget()
+    {
+        if (lockedTarget) {
+            UnlockTarget();
+            return;
+        }
+
+        List<Renderer> visibleRenderers = new List<Renderer>();
+        Renderer[] sceneRenderers = FindObjectsOfType<Renderer>();
+        Plane[] planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
+        for (int i = 0; i < sceneRenderers.Length; i++) {
+            if (sceneRenderers[i].gameObject.tag != "Enemy") continue;
+
+            if ((GeometryUtility.TestPlanesAABB(planes, sceneRenderers[i].bounds))) visibleRenderers.Add(sceneRenderers[i]);
+        }
+
+        if (visibleRenderers.Count == 0) return;
+
+        float closest = Vector3.Distance(visibleRenderers[0].gameObject.transform.position, transform.position);
+        int closestIndex = 0;
+        for (int i = 1; i < visibleRenderers.Count; i++) {
+            float distance = Vector3.Distance(visibleRenderers[i].gameObject.transform.position, transform.position);
+            if (distance < closest) {
+                closest = distance;
+                closestIndex = i;
+            }
+        }
+
+        lockedTarget = visibleRenderers[closestIndex].gameObject;
+    }
+
+    void UnlockTarget()
+    {
+        lockedTarget = null;
+        playerCamera.ResetPosition();
+    }
+
+    public Vector3 GetVector3BetweenPlayerAndLockedTarget()
+    {
+        if (!lockedTarget) return Vector3.zero;
+        return lockedTarget.transform.position - transform.position;
+    }
+
+    public Quaternion GetRotationTowardsLockedTarget()
+    {
+        if (!lockedTarget) return transform.rotation;
+        return Quaternion.LookRotation(GetVector3BetweenPlayerAndLockedTarget(), Vector3.up);
+    }
+
+    public Quaternion GetRotationTowardsLockedTargetForLightSpear()
+    {
+        if (!lockedTarget) return transform.rotation;
+        return GetRotationTowardsLockedTarget() * Quaternion.Euler(Vector3.up * -1);
     }
 }
