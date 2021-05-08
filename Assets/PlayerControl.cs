@@ -7,6 +7,9 @@ public class PlayerControl : MonoBehaviour
     PlayerInput inputs;
     public PlayerCamera playerCamera;
     public GameObject lightSpear;
+    public GameObject cursorPrefab;
+    public GameObject cursor;
+    GameObject spear;
     public float speed = 16f;
     public float jumpSpeed = 8f;
     public float gravity = 9.81f;
@@ -14,8 +17,7 @@ public class PlayerControl : MonoBehaviour
     Vector3 moveDirection;
     CharacterController characterController;
     Vector2 cameraControl = Vector2.zero;
-    GameObject spear;
-    GameObject lockedTarget = null;
+    public GameObject lockedTarget = null;
     float lockedTargetMaxDistance = 100;
 
     private void Awake()
@@ -177,12 +179,14 @@ public class PlayerControl : MonoBehaviour
         }
 
         lockedTarget = visibleRenderers[closestIndex].gameObject;
+        cursor = Instantiate(cursorPrefab);
+        cursor.GetComponent<Cursor>().playerControl = this;
     }
 
     void UnlockTarget()
     {
         lockedTarget = null;
-        playerCamera.ResetPosition();
+        Destroy(cursor);
     }
 
     public Vector3 GetVector3BetweenPlayerAndLockedTarget()
