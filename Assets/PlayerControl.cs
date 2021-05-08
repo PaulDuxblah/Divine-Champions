@@ -16,7 +16,7 @@ public class PlayerControl : MonoBehaviour
     Vector2 cameraControl = Vector2.zero;
     GameObject spear;
     GameObject lockedTarget = null;
-    float lockedTargetMaxDistance = 100;
+    float lockedTargetMaxDistance = 72;
 
     private void Awake()
     {
@@ -164,7 +164,10 @@ public class PlayerControl : MonoBehaviour
             if ((GeometryUtility.TestPlanesAABB(planes, sceneRenderers[i].bounds))) visibleRenderers.Add(sceneRenderers[i]);
         }
 
-        if (visibleRenderers.Count == 0) return;
+        if (visibleRenderers.Count == 0) {
+            playerCamera.ResetPosition();
+            return;
+        }
 
         float closest = Vector3.Distance(visibleRenderers[0].gameObject.transform.position, transform.position);
         int closestIndex = 0;
