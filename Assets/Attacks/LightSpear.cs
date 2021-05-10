@@ -12,7 +12,6 @@ public class LightSpear : MonoBehaviour
     public Rigidbody rb;
 
     float speed = 120f;
-    float additionalGravity = 0.001f;
     Vector3 throwDirection;
 
     void Awake()
