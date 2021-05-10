@@ -10,7 +10,6 @@ public class LightSpear : MonoBehaviour
     public static float DELAY_BEFORE_SPEAR_REAPPEARS = 0.75f;
 
     public Rigidbody rb;
-
     float speed = 120f;
     Vector3 throwDirection;
 
