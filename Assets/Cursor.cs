@@ -26,8 +26,6 @@ public class Cursor : MonoBehaviour
         Vector3 vectorBetweenPlayerAndLockedTargetNormalized = -playerControl.GetVector3BetweenPlayerAndLockedTarget().normalized;
         transform.position = playerControl.lockedTarget.transform.position + vectorBetweenPlayerAndLockedTargetNormalized * distanceFromTarget;
         transform.rotation = Quaternion.LookRotation(vectorBetweenPlayerAndLockedTargetNormalized.normalized);
-        transform.rotation *= Quaternion.Euler(90, 0, 0); // Turn cylinder toward player
-
-        transform.rotation *= Quaternion.Euler(0, 1, 0);
+        transform.rotation *= Quaternion.Euler(90, 1, 0); // Turn cylinder toward player and in round
     }
 }

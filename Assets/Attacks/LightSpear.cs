@@ -4,20 +4,22 @@ using UnityEngine;
 
 public class LightSpear : MonoBehaviour
 {
-    public static float CHANNEL_DURATION = 0.5f;
+    public static float CHANNEL_DURATION = 0.3f;
     public static float POSTACTION_LAG = 0.25f;
     public static float DELAY_BEFORE_DESTROY = 10.0f;
     public static float DELAY_BEFORE_SPEAR_REAPPEARS = 0.75f;
 
     public Rigidbody rb;
-    float speed = 60f;
+
+    float speed = 120f;
+    float additionalGravity = 0.001f;
     Vector3 throwDirection;
 
     void Awake()
     {
         rb.useGravity = false;
         rb.detectCollisions = false;
-        throwDirection = transform.forward + new Vector3(0, 0.05f, 0);
+        throwDirection = transform.forward + new Vector3(0, 0.01f, 0);
 
         Vector3 pos = transform.rotation * new Vector3(1f, 1.5f, 0);
         
@@ -34,7 +36,9 @@ public class LightSpear : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (rb.useGravity) {
+            rb.AddForce(-Physics.gravity * Time.deltaTime / 4);
+        }
     }
 
     IEnumerator Throw()

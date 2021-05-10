@@ -9,9 +9,9 @@ public class PlayerControl : MonoBehaviour
     public GameObject lightSpear;
     public GameObject cursorPrefab;
     public GameObject cursor;
-    public float speed = 16f;
-    public float jumpSpeed = 8f;
-    public float gravity = 9.81f;
+    float speed = 16f;
+    float jumpSpeed = 8f;
+    float gravity = 9.81f;
 
     Vector3 moveDirection;
     CharacterController characterController;
@@ -88,7 +88,7 @@ public class PlayerControl : MonoBehaviour
 
         float totalAngleRad = (cameraToDefaultAngle + directionAngle) * Mathf.Deg2Rad;
 
-        direction = new Vector2(Mathf.Cos(totalAngleRad), Mathf.Sin(totalAngleRad));
+        direction = new Vector2(Mathf.Cos(totalAngleRad), Mathf.Sin(totalAngleRad)) * direction.magnitude;
 
         Vector3 direction3D = new Vector3(direction.x, 0, direction.y);
 
