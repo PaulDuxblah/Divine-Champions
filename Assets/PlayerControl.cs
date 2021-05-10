@@ -7,15 +7,17 @@ public class PlayerControl : MonoBehaviour
     PlayerInput inputs;
     public PlayerCamera playerCamera;
     public GameObject lightSpear;
-    public float speed = 16f;
-    public float jumpSpeed = 8f;
-    public float gravity = 9.81f;
+    public GameObject cursorPrefab;
+    public GameObject cursor;
+    float speed = 16f;
+    float jumpSpeed = 8f;
+    float gravity = 9.81f;
 
     Vector3 moveDirection;
     CharacterController characterController;
     Vector2 cameraControl = Vector2.zero;
+    public GameObject lockedTarget = null;
     GameObject spear;
-    GameObject lockedTarget = null;
     float lockedTargetMaxDistance = 72;
 
     private void Awake()
@@ -86,7 +88,7 @@ public class PlayerControl : MonoBehaviour
 
         float totalAngleRad = (cameraToDefaultAngle + directionAngle) * Mathf.Deg2Rad;
 
-        direction = new Vector2(Mathf.Cos(totalAngleRad), Mathf.Sin(totalAngleRad));
+        direction = new Vector2(Mathf.Cos(totalAngleRad), Mathf.Sin(totalAngleRad)) * direction.magnitude;
 
         Vector3 direction3D = new Vector3(direction.x, 0, direction.y);
 
@@ -95,7 +97,7 @@ public class PlayerControl : MonoBehaviour
         } else {
 
         }
-
+        
         float targetAngle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0f, targetAngle, 0f);
     }
@@ -180,12 +182,14 @@ public class PlayerControl : MonoBehaviour
         }
 
         lockedTarget = visibleRenderers[closestIndex].gameObject;
+        cursor = Instantiate(cursorPrefab);
+        cursor.GetComponent<Cursor>().playerControl = this;
     }
 
     void UnlockTarget()
     {
         lockedTarget = null;
-        playerCamera.ResetPosition();
+        Destroy(cursor);
     }
 
     public Vector3 GetVector3BetweenPlayerAndLockedTarget()
