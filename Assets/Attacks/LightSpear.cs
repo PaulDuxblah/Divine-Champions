@@ -6,7 +6,7 @@ public class LightSpear : MonoBehaviour
 {
     public static float CHANNEL_DURATION = 0.5f;
     public static float POSTACTION_LAG = 0.25f;
-    public static float DELAY_BEFORE_DESTROY = 1.0f;
+    public static float DELAY_BEFORE_DESTROY = 10.0f;
     public static float DELAY_BEFORE_SPEAR_REAPPEARS = 0.75f;
 
     public Rigidbody rb;

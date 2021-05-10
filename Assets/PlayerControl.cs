@@ -9,7 +9,6 @@ public class PlayerControl : MonoBehaviour
     public GameObject lightSpear;
     public GameObject cursorPrefab;
     public GameObject cursor;
-    GameObject spear;
     public float speed = 16f;
     public float jumpSpeed = 8f;
     public float gravity = 9.81f;
@@ -18,7 +17,8 @@ public class PlayerControl : MonoBehaviour
     CharacterController characterController;
     Vector2 cameraControl = Vector2.zero;
     public GameObject lockedTarget = null;
-    float lockedTargetMaxDistance = 100;
+    GameObject spear;
+    float lockedTargetMaxDistance = 72;
 
     private void Awake()
     {
@@ -97,7 +97,7 @@ public class PlayerControl : MonoBehaviour
         } else {
 
         }
-
+        
         float targetAngle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0f, targetAngle, 0f);
     }
@@ -166,7 +166,10 @@ public class PlayerControl : MonoBehaviour
             if ((GeometryUtility.TestPlanesAABB(planes, sceneRenderers[i].bounds))) visibleRenderers.Add(sceneRenderers[i]);
         }
 
-        if (visibleRenderers.Count == 0) return;
+        if (visibleRenderers.Count == 0) {
+            playerCamera.ResetPosition();
+            return;
+        }
 
         float closest = Vector3.Distance(visibleRenderers[0].gameObject.transform.position, transform.position);
         int closestIndex = 0;
